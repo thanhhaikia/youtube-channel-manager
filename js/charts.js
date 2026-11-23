@@ -70,7 +70,7 @@
     if (!items.length) return '<div class="chart-empty">' + esc(opts.empty || 'Chưa có dữ liệu.') + '</div>';
     var fmt = opts.format || M.fmtCompact;
     var max = Math.max.apply(null, items.map(function (i) { return i.value || 0; })) || 1;
-    var total = items.reduce(function (s, i) { return s + (i.value || 0); }, 0);
+    var total = opts.total || items.reduce(function (s, i) { return s + (i.value || 0); }, 0);
     return '<div class="hbars">' + items.map(function (i) {
       var pct = opts.share && total ? ' <small>' + M.fmtPercent((i.value || 0) / total, 0) + '</small>' : '';
       return '<div class="hbar"><div class="hbar-label" title="' + esc(i.label) + '">' + esc(i.label) + '</div>' +

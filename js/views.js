@@ -248,9 +248,12 @@
       C.line(sm.rows.map(function (r) { return { label: M.fmtDate(r.day).slice(0, 5), value: pick(r) }; }), { zero: true, title: 'Số liệu theo ngày' });
     var breakdownNote = ana.days !== days ? '<p class="muted">Các bảng dưới đây đang theo kỳ ' + ana.days + ' ngày lưu lần trước' + (state === 'connected' ? '.' : '; kết nối lại để tải kỳ ' + days + ' ngày.') + '</p>' : '';
     var label = function (map) { return function (x) { return { label: map ? (map[x.key] || x.key) : country(x.key), value: x.views }; }; };
-    html += breakdownNote + '<div class="grid3"><div><h3>Nguồn truy cập</h3>' + C.hbars((ana.traffic || []).slice(0, 8).map(label(api.TRAFFIC_LABELS)), { share: true }) + '</div>' +
-      '<div><h3>Quốc gia</h3>' + C.hbars((ana.countries || []).slice(0, 8).map(label(null)), { share: true }) + '</div>' +
-      '<div><h3>Thiết bị</h3>' + C.hbars((ana.devices || []).map(label(api.DEVICE_LABELS)), { share: true }) + '</div></div>';
+    /* Shares are of all views in the period, not only of the rows shown. */
+    var sumViews = function (list) { return (list || []).reduce(function (t, x) { return t + (x.views || 0); }, 0); };
+    var share = { share: true, total: Math.max(sumViews(ana.traffic), sumViews(ana.devices), sumViews(ana.countries)) };
+    html += breakdownNote + '<div class="grid3"><div><h3>Nguồn truy cập</h3>' + C.hbars((ana.traffic || []).slice(0, 8).map(label(api.TRAFFIC_LABELS)), share) + '</div>' +
+      '<div><h3>Quốc gia</h3>' + C.hbars((ana.countries || []).slice(0, 8).map(label(null)), share) + '</div>' +
+      '<div><h3>Thiết bị</h3>' + C.hbars((ana.devices || []).map(label(api.DEVICE_LABELS)), share) + '</div></div>';
     if ((ana.topVideos || []).length) {
       html += '<h3>Video nhiều lượt xem nhất trong kỳ</h3><div class="table-wrap"><table class="table"><thead><tr><th>Video</th><th class="num">Lượt xem</th><th class="num">Giờ xem</th><th class="num">Thời lượng xem TB</th><th class="num">Người đăng ký mới</th></tr></thead><tbody>' +
         ana.topVideos.map(function (v) {
