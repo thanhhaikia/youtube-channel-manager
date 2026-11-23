@@ -144,17 +144,33 @@
     }, Promise.resolve());
   }
 
+  /* Forgets a token the API rejected, for every channel signed in with it. */
+  function dropToken(token) {
+    Y.auth.invalidate(token);
+    store.state.order.forEach(function (id) { if (store.getToken(id) === token) store.clearToken(id); });
+  }
+
+  /* Public channel data. A rejected sign-in is dropped and the next one (or a renewed one) is tried. */
+  function fetchPublic(ids, tries) {
+    return renewSilently(ids).then(function () {
+      var auth = publicAuth();
+      if (!auth) throw new api.ApiError(0, 'noAuth');
+      return api.fetchChannels(ids, auth).then(null, function (err) {
+        if (err.reason !== 'authError' || !auth.token) throw err;
+        dropToken(auth.token);
+        if (tries <= 1) throw err;
+        return fetchPublic(ids, tries - 1);
+      });
+    });
+  }
+
   function refresh(ids, quiet) {
     ids = (ids || store.state.order).filter(isReal);
     if (!ids.length) { if (!quiet) toast('Chưa có kênh thật nào để làm mới.'); return Promise.resolve(); }
     if (ui.busy) return Promise.resolve();
     setBusy('Đang tải thông tin ' + ids.length + ' kênh…');
     var now = new Date().toISOString();
-    return renewSilently(ids).then(function () {
-      var auth = publicAuth();
-      if (!auth) throw new api.ApiError(0, 'noAuth');
-      return api.fetchChannels(ids, auth);
-    }).then(function (fresh) {
+    return fetchPublic(ids, 3).then(function (fresh) {
       var found = {};
       fresh.forEach(function (c) {
         found[c.id] = true;
