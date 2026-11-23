@@ -359,7 +359,7 @@
     'note': function (el) {
       store.patchChannel(el.dataset.id, { note: el.value });
       clearTimeout(noteTimer);
-      noteTimer = setTimeout(persist, 500);
+      noteTimer = setTimeout(function () { noteTimer = null; persist(); }, 500);
     },
     'detail-q': function (el) { ui.detail.vq = el.value; Y.views.renderPart('detail-videos'); },
     'vids-q': function (el) { ui.vids.q = el.value; Y.views.renderPart('all-videos'); }
@@ -392,6 +392,9 @@
       ui.detail.all = false; ui.detail.vq = ''; ui.vids.limit = 60;
       Y.views.render();
       root.scrollTo(0, 0);
+    });
+    root.addEventListener('pagehide', function () {
+      if (noteTimer) { clearTimeout(noteTimer); noteTimer = null; persist(); }
     });
     root.addEventListener('storage', function (e) {
       if (e.key !== Y.store.KEY || ui.busy) return;
