@@ -133,7 +133,7 @@
     var byEmail = {};
     ids.forEach(function (id) {
       var c = channel(id);
-      if (c && c.owned && c.email && !c.signedOut && !store.getToken(id)) (byEmail[c.email] = byEmail[c.email] || []).push(id);
+      if (c && c.owned && c.email && !(settings().signedOut || {})[id] && !store.getToken(id)) (byEmail[c.email] = byEmail[c.email] || []).push(id);
     });
     return Object.keys(byEmail).reduce(function (p, email) {
       return p.then(function () {
@@ -230,7 +230,8 @@
         if (!mine.length) { setBusy(''); toast('Tài khoản Google vừa chọn chưa có kênh YouTube nào.', 'error'); return false; }
         var scopeOk = Y.auth.hasAnalyticsScope(res.scope);
         mine.forEach(function (c) {
-          store.upsertChannel(c, { group: 'mine', owned: true, email: email, scopeOk: scopeOk, signedOut: false, fetchedAt: now, missing: false, demo: false });
+          store.upsertChannel(c, { group: 'mine', owned: true, email: email, scopeOk: scopeOk, fetchedAt: now, missing: false, demo: false });
+          if (s.signedOut) delete s.signedOut[c.id];
           store.setToken(c.id, res.token, res.expiresIn);
           store.recordSnapshot(c.id);
         });
@@ -390,7 +391,8 @@
       var t = store.getToken(el.dataset.id);
       if (t) Y.auth.revoke(t);
       store.clearToken(el.dataset.id);
-      store.patchChannel(el.dataset.id, { signedOut: true });
+      /* Kept in settings, which backups leave out: signing out is a choice for this device only. */
+      (settings().signedOut = settings().signedOut || {})[el.dataset.id] = true;
       persist();
       toast('Đã ngắt phiên đăng nhập của kênh này trên thiết bị.', 'ok');
       Y.views.render();
