@@ -1,0 +1,10 @@
+{
+  "name": "youtube-channel-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dashboard quản lý và theo dõi nhiều kênh YouTube (web app tĩnh)",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test"
+  }
+}
