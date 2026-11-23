@@ -11,7 +11,7 @@
   function videosOf(id) { return (st().videos[id] || {}).items || []; }
   function country(code) { try { return (regionNames && code && regionNames.of(code)) || code || ''; } catch (e) { return code; } }
   function img(url, cls) {
-    if (!/^(https:\/\/|data:image\/)/.test(url || '')) return '<span class="' + cls + ' ph"></span>';
+    if (!/^(https:\/\/[\w.-]+\.(ggpht|ytimg|googleusercontent)\.com\/|data:image\/)/.test(url || '')) return '<span class="' + cls + ' ph"></span>';
     return '<img class="' + cls + '" src="' + esc(url) + '" alt="" loading="lazy" referrerpolicy="no-referrer">';
   }
   function chLink(c) { return c.demo ? '' : 'https://www.youtube.com/channel/' + encodeURIComponent(c.id); }
