@@ -104,6 +104,7 @@
     var done = 0;
     return pool(ids, 4, function (id) {
       var c = channel(id);
+      if (!c) return Promise.resolve();
       var token = c.owned ? store.getToken(id) : null;
       var auth = token ? { token: token } : publicAuth();
       if (!auth) return Promise.reject(new api.ApiError(0, 'noAuth'));
@@ -141,6 +142,7 @@
       var found = {};
       fresh.forEach(function (c) {
         found[c.id] = true;
+        if (!channel(c.id)) return;
         store.upsertChannel(c, { fetchedAt: now, missing: false, videoError: '' });
         store.recordSnapshot(c.id);
       });

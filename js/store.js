@@ -108,8 +108,8 @@
       state.snapshots[id] = M.addSnapshot(state.snapshots[id], { d: M.dayKey(date || new Date()), s: c.subs, v: c.views, n: c.videos });
     }
 
-    function setVideos(id, items) { state.videos[id] = { fetchedAt: new Date().toISOString(), items: items }; }
-    function setAnalytics(id, data) { state.analytics[id] = Object.assign({ fetchedAt: new Date().toISOString() }, data); }
+    function setVideos(id, items) { if (state.channels[id]) state.videos[id] = { fetchedAt: new Date().toISOString(), items: items }; }
+    function setAnalytics(id, data) { if (state.channels[id]) state.analytics[id] = Object.assign({ fetchedAt: new Date().toISOString() }, data); }
 
     /* ---- quota (estimate, resets with the Pacific Time day) ---- */
 
