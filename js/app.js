@@ -93,7 +93,7 @@
           store.patchChannel(id, { anaError: '' });
         });
       }, function (err) {
-        if (err.reason === 'authError') store.clearToken(id);
+        if (err.reason === 'authError') { Y.auth.invalidate(token); store.clearToken(id); }
         store.patchChannel(id, { anaError: api.explain(err) });
         if (c && err.reason === 'network') throw err;
       });
@@ -110,7 +110,7 @@
       if (!auth) return Promise.reject(new api.ApiError(0, 'noAuth'));
       return api.fetchRecentVideos(c.uploads, auth, settings().videoCount).then(null, function (err) {
         if (err.reason === 'authError' && token) {
-          store.clearToken(id); token = null;
+          Y.auth.invalidate(token); store.clearToken(id); token = null;
           var pub = publicAuth();
           if (pub) return api.fetchRecentVideos(c.uploads, pub, settings().videoCount);
         }
@@ -127,18 +127,34 @@
     });
   }
 
+  /* Android app only: renews lapsed sign-ins without showing anything, one request per account. */
+  function renewSilently(ids) {
+    if (!Y.auth.isNative()) return Promise.resolve();
+    var byEmail = {};
+    ids.forEach(function (id) {
+      var c = channel(id);
+      if (c && c.owned && c.email && !store.getToken(id)) (byEmail[c.email] = byEmail[c.email] || []).push(id);
+    });
+    return Object.keys(byEmail).reduce(function (p, email) {
+      return p.then(function () {
+        return Y.auth.requestToken({ hint: email, monetary: settings().monetary, silent: true }).then(function (res) {
+          byEmail[email].forEach(function (id) { store.setToken(id, res.token, res.expiresIn); });
+        }, function () { /* stays expired; the user can reconnect */ });
+      });
+    }, Promise.resolve());
+  }
+
   function refresh(ids, quiet) {
     ids = (ids || store.state.order).filter(isReal);
     if (!ids.length) { if (!quiet) toast('Chưa có kênh thật nào để làm mới.'); return Promise.resolve(); }
-    var auth = publicAuth();
-    if (!auth) {
-      if (!quiet) toast('Cần API key hoặc đăng nhập Google để tải dữ liệu. Mở Cài đặt để thiết lập.', 'error');
-      return Promise.resolve();
-    }
     if (ui.busy) return Promise.resolve();
     setBusy('Đang tải thông tin ' + ids.length + ' kênh…');
     var now = new Date().toISOString();
-    return api.fetchChannels(ids, auth).then(function (fresh) {
+    return renewSilently(ids).then(function () {
+      var auth = publicAuth();
+      if (!auth) throw new api.ApiError(0, 'noAuth');
+      return api.fetchChannels(ids, auth);
+    }).then(function (fresh) {
       var found = {};
       fresh.forEach(function (c) {
         found[c.id] = true;
@@ -153,7 +169,10 @@
       persist(); setBusy('');
       if (!quiet) toast('Đã cập nhật ' + ids.length + ' kênh.', 'ok');
       Y.views.render();
-    }, function (err) { persist(); fail(err); });
+    }, function (err) {
+      persist();
+      if (quiet && err.reason === 'noAuth') { setBusy(''); Y.views.render(); } else fail(err);
+    });
   }
 
   function addChannel(input) {
@@ -177,7 +196,7 @@
   /* Google sign-in. With `hintId` it renews the session of that channel. */
   function connect(hintId) {
     var s = settings();
-    if (!s.clientId) {
+    if (!s.clientId && !Y.auth.isNative()) {
       toast('Hãy nhập OAuth Client ID trong Cài đặt trước khi đăng nhập Google.', 'error');
       navigate('#/settings');
       return Promise.resolve(false);
@@ -228,6 +247,7 @@
   /* ---- data management ---- */
 
   function download(name, text, type) {
+    if (Y.auth.isNative()) { Y.auth.native().saveFile(name, type, text); return; }
     var blob = new Blob([text], { type: type });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
@@ -429,7 +449,7 @@
     Y.views.render();
     if (settings().clientId) Y.auth.preload();
     var last = settings().lastRefresh ? +new Date(settings().lastRefresh) : 0;
-    if (Date.now() - last > STALE_MS && store.state.order.some(isReal) && publicAuth()) refresh(null, true);
+    if (Date.now() - last > STALE_MS && store.state.order.some(isReal) && (publicAuth() || Y.auth.isNative())) refresh(null, true);
   }
 
   Y.app = {

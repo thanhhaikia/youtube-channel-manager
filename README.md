@@ -30,6 +30,16 @@ Lần đầu Google báo "ứng dụng chưa được xác minh": chọn "Advanc
 - **Trên máy**: cần Node.js 20 trở lên, chạy `npm start` rồi mở http://localhost:8080.
 - **Mở trực tiếp `index.html`**: xem được dữ liệu mẫu và dùng được API key, nhưng không đăng nhập Google được (Google yêu cầu địa chỉ http/https).
 
+## Ứng dụng Android (APK)
+
+Thư mục `android/` là một ứng dụng WebView đóng gói chính web app này. Google không cho đăng nhập trong WebView, nên ứng dụng đăng nhập bằng Google Play Services (`NativeBridge.java`) và tự gia hạn phiên khi làm mới.
+
+- Build: `cd android && ./gradlew assembleRelease` (JDK 17, Android SDK 34). APK nằm ở `android/app/build/outputs/apk/release/`.
+- Ký APK: tạo `android/keystore.properties` (không đưa vào git) với `storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Không có tệp này thì dùng `./gradlew assembleDebug`.
+- Thiết lập Google Cloud: tạo thêm một "OAuth client ID" loại **Android** với package name `io.github.thanhhaikia.youtubemanager` và mã SHA-1 của chứng chỉ ký APK. Trang Cài đặt trong ứng dụng hiển thị sẵn hai giá trị này. Đổi khóa ký thì SHA-1 đổi theo và phải khai báo lại.
+- Trong APK, mỗi tài khoản Google chỉ mở được kênh chính của tài khoản đó; kênh thuộc tài khoản thương hiệu (Brand Account) cần đăng nhập ở bản web.
+- Nếu giới hạn API key theo trang web, thêm `https://appassets.androidplatform.net/*`, hoặc chỉ giới hạn theo API.
+
 ## Giới hạn cần biết
 
 - Mỗi phiên đăng nhập Google kéo dài khoảng 1 giờ (quy định của Google với ứng dụng chạy hoàn toàn trên trình duyệt). Hết phiên, số liệu công khai vẫn cập nhật bằng API key; số liệu riêng cần bấm "Kết nối lại". Nếu cho phép pop-up cho trang, nút "Kết nối lại tất cả" làm lần lượt mọi kênh.
@@ -56,4 +66,5 @@ Lần đầu Google báo "ứng dụng chưa được xác minh": chọn "Advanc
 | `js/metrics.js` | Tính toán và định dạng số liệu |
 | `js/charts.js`, `js/views.js`, `js/app.js` | Biểu đồ, giao diện, xử lý sự kiện |
 | `js/demo.js` | Dữ liệu mẫu |
+| `android/` | Ứng dụng Android (WebView + đăng nhập Google qua Play Services) |
 | `tests/` | Kiểm thử đơn vị (`npm test`) |

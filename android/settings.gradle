@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        google()
+        // Google-hosted mirror of Maven Central; avoids HTTP 429 from Maven Central on shared build machines.
+        maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        // Google-hosted mirror of Maven Central; avoids HTTP 429 from Maven Central on shared build machines.
+        maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+        mavenCentral()
+    }
+}
+rootProject.name = "YouTubeChannelManager"
+include ":app"

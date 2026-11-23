@@ -72,7 +72,7 @@
     return '<section class="card hero"><h1>Quản lý tất cả kênh YouTube ở một nơi</h1>' +
       '<p>Đăng nhập từng tài khoản Google để theo dõi kênh của bạn (kể cả số liệu riêng như thời gian xem, người đăng ký tăng giảm), và thêm kênh của người khác để tham khảo, so sánh.</p>' +
       '<div class="steps">' +
-      '<div class="step"><b>1. Thiết lập một lần</b><p>Nhập OAuth Client ID và API key của bạn trong Cài đặt. Có hướng dẫn từng bước.</p><a class="btn" href="#/settings">Mở Cài đặt</a></div>' +
+      '<div class="step"><b>1. Thiết lập một lần</b><p>Làm theo hướng dẫn từng bước trong Cài đặt để kết nối Google Cloud và nhập API key.</p><a class="btn" href="#/settings">Mở Cài đặt</a></div>' +
       '<div class="step"><b>2. Đăng nhập kênh của bạn</b><p>Mỗi kênh đăng nhập một lần bằng tài khoản Google tương ứng.</p><button class="btn primary" data-action="connect" data-busy-disable>Đăng nhập Google</button></div>' +
       '<div class="step"><b>3. Hoặc xem thử trước</b><p>Nạp vài kênh mẫu (số liệu không có thật) để xem giao diện.</p><button class="btn" data-action="demo-load">Xem dữ liệu mẫu</button></div>' +
       '</div>' + addForm() + '</section>';
@@ -337,9 +337,8 @@
     var a = app(), s = a.settings(), origin = root.location.origin, canAuth = Y.auth.supported();
     var owned = a.store.list().filter(function (c) { return c.owned && !c.demo; });
     var used = a.store.quotaUsed();
-    return '<h1>Cài đặt</h1>' +
-      '<section class="card"><h2>1. Đăng nhập Google (kênh của tôi)</h2>' +
-      (canAuth ? '' : '<div class="notice warn">Bạn đang mở ứng dụng bằng tệp trực tiếp. Đăng nhập Google chỉ chạy được qua địa chỉ http(s): dùng trang GitHub Pages hoặc chạy <code>npm start</code> rồi mở http://localhost:8080.</div>') +
+    var nat = Y.auth.isNative(), info = nat ? Y.auth.nativeInfo() : {};
+    var webSetup = (canAuth ? '' : '<div class="notice warn">Bạn đang mở ứng dụng bằng tệp trực tiếp. Đăng nhập Google chỉ chạy được qua địa chỉ http(s): dùng trang GitHub Pages hoặc chạy <code>npm start</code> rồi mở http://localhost:8080.</div>') +
       '<label class="field" for="set-client">OAuth Client ID<input id="set-client" type="text" data-change="set-client" value="' + esc(s.clientId) + '" placeholder="xxxxxxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false"></label>' +
       '<label class="check"><input type="checkbox" data-change="set-monetary"' + (s.monetary ? ' checked' : '') + '> Xin thêm quyền xem doanh thu ước tính (chỉ có số liệu với kênh đã bật kiếm tiền; cần kết nối lại sau khi bật)</label>' +
       '<details><summary>Cách lấy OAuth Client ID (làm một lần, khoảng 10 phút)</summary><ol class="guide">' +
@@ -348,14 +347,24 @@
       '<li>Vào "OAuth consent screen" (Google Auth Platform): chọn loại <b>External</b>, điền tên ứng dụng và email. Ở mục "Audience" → "Test users", thêm tất cả email Google mà bạn dùng để quản lý các kênh.</li>' +
       '<li>Vào "Credentials" (Clients) → "Create credentials" → "OAuth client ID" → loại <b>Web application</b>. Ở "Authorized JavaScript origins" thêm đúng địa chỉ này: <code>' + esc(canAuth ? origin : 'https://<tên-bạn>.github.io') + '</code></li>' +
       '<li>Sao chép "Client ID" và dán vào ô ở trên. Không cần "Client secret".</li>' +
-      '<li>Về Tổng quan, bấm "Đăng nhập Google để thêm kênh". Lần đầu Google sẽ báo "ứng dụng chưa được xác minh": chọn "Advanced" → "Go to …" vì đây là ứng dụng của chính bạn, rồi tick đủ các ô quyền.</li></ol></details>' +
+      '<li>Về Tổng quan, bấm "Đăng nhập Google để thêm kênh". Lần đầu Google sẽ báo "ứng dụng chưa được xác minh": chọn "Advanced" → "Go to …" vì đây là ứng dụng của chính bạn, rồi tick đủ các ô quyền.</li></ol></details>';
+    var nativeSetup = '<label class="check"><input type="checkbox" data-change="set-monetary"' + (s.monetary ? ' checked' : '') + '> Xin thêm quyền xem doanh thu ước tính (chỉ có số liệu với kênh đã bật kiếm tiền; cần kết nối lại sau khi bật)</label>' +
+      '<details open><summary>Thiết lập Google Cloud cho ứng dụng Android (làm một lần)</summary><ol class="guide">' +
+      '<li>Mở <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a>, tạo một dự án (hoặc dùng dự án đã tạo cho bản web).</li>' +
+      '<li>Vào "APIs &amp; Services" → "Library", bật <b>YouTube Data API v3</b> và <b>YouTube Analytics API</b>.</li>' +
+      '<li>Vào "OAuth consent screen": chọn loại <b>External</b>; ở "Test users" thêm mọi email Google bạn dùng để quản lý các kênh.</li>' +
+      '<li>Vào "Credentials" → "Create credentials" → "OAuth client ID" → loại <b>Android</b>, rồi điền:<br>Package name: <code>' + esc(info.packageName || '') + '</code><br>SHA-1: <code>' + esc(info.sha1 || '') + '</code></li>' +
+      '<li>Không cần dán mã nào vào ứng dụng. Về Tổng quan, bấm "Đăng nhập Google để thêm kênh" và chọn tài khoản.</li></ol>' +
+      '<p class="muted">Trong ứng dụng Android, mỗi tài khoản Google chỉ mở được kênh chính của tài khoản đó. Kênh thuộc "tài khoản thương hiệu" (Brand Account) cần đăng nhập ở bản web.</p></details>';
+    return '<h1>Cài đặt</h1>' +
+      '<section class="card"><h2>1. Đăng nhập Google (kênh của tôi)</h2>' + (nat ? nativeSetup : webSetup) +
       '<h3>Tài khoản đã kết nối</h3>' + (owned.length ? '<ul class="accounts">' + owned.map(function (c) {
         var stt = a.connState(c);
         return '<li>' + img(c.thumb, 'avatar tiny') + '<a href="#/channel/' + encodeURIComponent(c.id) + '">' + esc(c.title) + '</a> <small>' + esc(c.email || '') + '</small> ' + badge(c) +
           (stt === 'expired' ? ' <button class="btn small" data-action="reconnect" data-id="' + esc(c.id) + '" data-busy-disable>Kết nối lại</button>' : '') + '</li>';
       }).join('') + '</ul>' : '<p class="muted">Chưa có tài khoản nào.</p>') +
       '<button class="btn primary" data-action="connect" data-busy-disable>Thêm tài khoản Google</button>' +
-      '<p class="muted">Ứng dụng chỉ xin quyền xem (không sửa, không xóa được gì trên kênh). Mỗi phiên đăng nhập kéo dài khoảng 1 giờ theo quy định của Google cho ứng dụng chạy trên trình duyệt; hết giờ bấm "Kết nối lại". Mã đăng nhập không được lưu lâu dài và không gửi đi đâu ngoài Google.</p></section>' +
+      '<p class="muted">Ứng dụng chỉ xin quyền xem (không sửa, không xóa được gì trên kênh). ' + (nat ? 'Phiên đăng nhập được tự gia hạn mỗi khi bạn làm mới.' : 'Mỗi phiên đăng nhập kéo dài khoảng 1 giờ theo quy định của Google cho ứng dụng chạy trên trình duyệt; hết giờ bấm "Kết nối lại".') + ' Mã đăng nhập không được lưu lâu dài và không gửi đi đâu ngoài Google.</p></section>' +
       '<section class="card"><h2>2. API key (số liệu công khai, kênh tham khảo)</h2>' +
       '<label class="field" for="set-key">YouTube Data API key<span class="row"><input id="set-key" type="password" data-change="set-key" value="' + esc(s.apiKey) + '" placeholder="AIza..." autocomplete="off" spellcheck="false">' +
       '<button class="btn" type="button" data-action="toggle-key">Hiện/ẩn</button><button class="btn" type="button" data-action="test-key" data-busy-disable>Kiểm tra</button></span></label>' +
