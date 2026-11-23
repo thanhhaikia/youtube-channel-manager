@@ -391,6 +391,11 @@
       Y.views.render();
       root.scrollTo(0, 0);
     });
+    root.addEventListener('storage', function (e) {
+      if (e.key !== Y.store.KEY || ui.busy) return;
+      store.load();
+      Y.views.render();
+    });
     Y.views.render();
     if (settings().clientId) Y.auth.preload();
     var last = settings().lastRefresh ? +new Date(settings().lastRefresh) : 0;
