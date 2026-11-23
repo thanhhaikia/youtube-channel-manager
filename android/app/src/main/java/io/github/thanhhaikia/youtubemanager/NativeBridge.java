@@ -178,17 +178,18 @@ final class NativeBridge {
         if (pendingMonetary) scopes.add(new Scope(SCOPE_BASE + "yt-analytics-monetary.readonly"));
         AuthorizationRequest request = AuthorizationRequest.builder()
                 .setRequestedScopes(scopes).setAccount(new Account(email, GOOGLE)).build();
+        // Not scoped to the activity: scoped listeners are dropped when it stops, which would leave pendingId set.
         Identity.getAuthorizationClient(activity).authorize(request)
-                .addOnSuccessListener(activity, result -> {
+                .addOnSuccessListener(result -> {
                     if (!result.hasResolution()) { deliver(result); return; }
                     if (silent) { finish("interaction_required", null); return; }
                     try {
                         activity.startIntentSenderForResult(result.getPendingIntent().getIntentSender(), RC_AUTH, null, 0, 0, 0);
-                    } catch (IntentSender.SendIntentException e) {
+                    } catch (IntentSender.SendIntentException | RuntimeException e) {
                         finish("unknown", e.getMessage());
                     }
                 })
-                .addOnFailureListener(activity, this::finishWithException);
+                .addOnFailureListener(this::finishWithException);
     }
 
     private void deliver(AuthorizationResult result) {
@@ -231,6 +232,7 @@ final class NativeBridge {
     }
 
     private void send(String id, JSONObject result) {
+        if (activity.isDestroyed()) return;
         web.evaluateJavascript("window.YTMNativeCallback(" + JSONObject.quote(id) + "," + result + ")", null);
     }
 
