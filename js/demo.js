@@ -17,12 +17,12 @@
   }
 
   var CHANNELS = [
-    { id: 'DEMO_1', title: 'Bếp Nhà Mẫu', handle: '@bepnhamau', group: 'mine', subs: 48200, views: 9150000, videos: 214, daily: 6200, color: '#c2410c', topic: 'Cách nấu' },
-    { id: 'DEMO_2', title: 'Học Tiếng Anh Mẫu', handle: '@hoctienganhmau', group: 'mine', subs: 12750, views: 1480000, videos: 96, daily: 1500, color: '#1d4ed8', topic: 'Bài học' },
-    { id: 'DEMO_3', title: 'Du Lịch Mẫu', handle: '@dulichmau', group: 'mine', subs: 3100, views: 265000, videos: 41, daily: 420, color: '#15803d', topic: 'Hành trình' },
-    { id: 'DEMO_4', title: 'Kênh Tham Khảo A', handle: '@thamkhaoa', group: 'ref', subs: 1250000, views: 412000000, videos: 890, daily: 180000, color: '#7c3aed', topic: 'Tập' },
-    { id: 'DEMO_5', title: 'Kênh Tham Khảo B', handle: '@thamkhaob', group: 'ref', subs: 305000, views: 58000000, videos: 1320, daily: 31000, color: '#be123c', topic: 'Số' },
-    { id: 'DEMO_6', title: 'Kênh Tham Khảo C', handle: '@thamkhaoc', group: 'ref', subs: 87000, views: 11200000, videos: 150, daily: 9000, color: '#0f766e', topic: 'Video' }
+    { id: 'DEMO_1', title: 'Bếp Nhà Mẫu', handle: '@bepnhamau', group: 'mine', subs: 48200, views: 9150000, videos: 214, daily: 6200, color: '#1565c0', topic: 'Cách nấu' },
+    { id: 'DEMO_2', title: 'Học Tiếng Anh Mẫu', handle: '@hoctienganhmau', group: 'mine', subs: 12750, views: 1480000, videos: 96, daily: 1500, color: '#1b7f3b', topic: 'Bài học' },
+    { id: 'DEMO_3', title: 'Du Lịch Mẫu', handle: '@dulichmau', group: 'mine', subs: 3100, views: 265000, videos: 41, daily: 420, color: '#00796b', topic: 'Hành trình' },
+    { id: 'DEMO_4', title: 'Kênh Tham Khảo A', handle: '@thamkhaoa', group: 'ref', subs: 1250000, views: 412000000, videos: 890, daily: 180000, color: '#283593', topic: 'Tập' },
+    { id: 'DEMO_5', title: 'Kênh Tham Khảo B', handle: '@thamkhaob', group: 'ref', subs: 305000, views: 58000000, videos: 1320, daily: 31000, color: '#2e7d32', topic: 'Số' },
+    { id: 'DEMO_6', title: 'Kênh Tham Khảo C', handle: '@thamkhaoc', group: 'ref', subs: 87000, views: 11200000, videos: 150, daily: 9000, color: '#0277bd', topic: 'Video' }
   ];
 
   var TRAFFIC = ['SUBSCRIBER', 'RELATED_VIDEO', 'YT_SEARCH', 'SHORTS', 'YT_CHANNEL', 'EXT_URL', 'NOTIFICATION', 'PLAYLIST'];
