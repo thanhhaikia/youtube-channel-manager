@@ -156,7 +156,7 @@ test('fetchAnalytics maps report rows and tolerates failing optional sections', 
   assert.equal(a.start, '2026-01-07');
   assert.equal(a.end, '2026-01-13');
   assert.equal(a.daily.length, 2);
-  assert.deepEqual(a.daily[1], { day: '2026-01-13', views: 20, minutes: 50, gained: 4, lost: 0, likes: 5, comments: 2, shares: 1, revenue: null });
+  assert.deepEqual(a.daily[1], { day: '2026-01-13', views: 20, minutes: 50, avgDur: 150, gained: 4, lost: 0, likes: 5, comments: 2, shares: 1, revenue: null });
   assert.deepEqual(a.traffic, [{ key: 'YT_SEARCH', views: 20, minutes: 40 }]);
   assert.equal(a.topVideos[0].id, 'vid1');
   assert.deepEqual(a.countries, []);

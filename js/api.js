@@ -290,7 +290,7 @@
 
   function mapDaily(r) {
     return {
-      day: r.day, views: r.views, minutes: r.estimatedMinutesWatched, gained: r.subscribersGained,
+      day: r.day, views: r.views, minutes: r.estimatedMinutesWatched, avgDur: r.averageViewDuration == null ? null : r.averageViewDuration, gained: r.subscribersGained,
       lost: r.subscribersLost, likes: r.likes, comments: r.comments, shares: r.shares,
       revenue: r.estimatedRevenue == null ? null : r.estimatedRevenue
     };

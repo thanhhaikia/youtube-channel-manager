@@ -194,7 +194,10 @@
       t[k] = has ? s : null;
     });
     t.net = t.gained == null ? null : t.gained - (t.lost || 0);
-    t.avgDur = t.views ? (t.minutes * 60) / t.views : null;
+    /* Prefer YouTube's own daily average view duration, weighted by views. */
+    var w = 0, wd = 0;
+    rows.forEach(function (r) { if (r.avgDur != null && r.views) { w += r.views; wd += r.avgDur * r.views; } });
+    t.avgDur = w ? wd / w : (t.views ? (t.minutes * 60) / t.views : null);
     return t;
   }
 

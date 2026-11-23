@@ -93,6 +93,8 @@ test('analyticsSummary compares the period with the one before it', () => {
   assert.equal(s.current.revenue, null);
   assert.equal(s.current.avgDur, 120);
   assert.equal(s.rows.length, 7);
+  const reported = M.sumRows([{ views: 10, minutes: 30, avgDur: 60 }, { views: 30, minutes: 30, avgDur: 20 }]);
+  assert.equal(reported.avgDur, 30);
   const noPrev = M.analyticsSummary(daily.slice(7), '2026-01-14', 7);
   assert.equal(noPrev.change.views, null);
 });
