@@ -8,7 +8,7 @@
   var HISTORY_DAYS = 180;
 
   var ui = {
-    group: 'all', sort: 'subs', deltaDays: 7, busy: '',
+    hash: root.location.hash, group: 'all', sort: 'subs', deltaDays: 7, busy: '',
     detail: { growth: 's', ana: 'views', vsort: 'date', vq: '', all: false },
     compare: null,
     vids: { group: 'all', channel: '', sort: 'date', q: '', limit: 60 }
@@ -179,7 +179,7 @@
     var s = settings();
     if (!s.clientId) {
       toast('Hãy nhập OAuth Client ID trong Cài đặt trước khi đăng nhập Google.', 'error');
-      root.location.hash = '#/settings';
+      navigate('#/settings');
       return Promise.resolve(false);
     }
     var hint = hintId && channel(hintId) ? channel(hintId).email : '';
@@ -292,6 +292,23 @@
     }, fail);
   }
 
+  /* ---- navigation ---- */
+
+  function onRoute() {
+    ui.detail.all = false; ui.detail.vq = ''; ui.vids.limit = 60;
+    Y.views.render();
+    root.scrollTo(0, 0);
+  }
+
+  /* The route is kept in memory, so the app also works where the address cannot change
+     (for example when the page is embedded as a document without its own URL). */
+  function navigate(hash) {
+    if (hash === ui.hash) return;
+    ui.hash = hash;
+    try { if (root.location.protocol !== 'about:' && root.location.hash !== hash) root.location.hash = hash; } catch (e) { /* ignore */ }
+    onRoute();
+  }
+
   /* ---- events ---- */
 
   var noteTimer = null;
@@ -306,7 +323,7 @@
       var c = channel(el.dataset.id);
       if (!c || !root.confirm('Xóa kênh "' + c.title + '" khỏi danh sách? Lịch sử theo dõi của kênh này cũng bị xóa.')) return;
       store.removeChannel(c.id); persist();
-      if (/^#\/channel\//.test(root.location.hash)) root.location.hash = '#/';
+      if (/^#\/channel\//.test(ui.hash)) navigate('#/');
       else Y.views.render();
     },
     'group': function (el) { ui.group = el.dataset.value; Y.views.render(); },
@@ -321,7 +338,7 @@
       if (i >= 0) ui.compare.splice(i, 1); else ui.compare.push(el.dataset.id);
       Y.views.render();
     },
-    'demo-load': function () { loadDemo(); toast('Đã nạp dữ liệu mẫu.', 'ok'); root.location.hash = '#/'; Y.views.render(); },
+    'demo-load': function () { loadDemo(); toast('Đã nạp dữ liệu mẫu.', 'ok'); navigate('#/'); Y.views.render(); },
     'demo-remove': function () { removeDemo(); toast('Đã xóa dữ liệu mẫu.', 'ok'); Y.views.render(); },
     'export-json': function () { download('youtube-channels-' + M.dayKey(new Date()) + '.json', JSON.stringify(store.exportData(), null, 1), 'application/json'); },
     'export-csv': function () { download('youtube-channels-' + M.dayKey(new Date()) + '.csv', buildCsv(), 'text/csv;charset=utf-8'); },
@@ -367,6 +384,14 @@
 
   function init() {
     document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href^="#"]');
+      if (link && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        var href = link.getAttribute('href');
+        e.preventDefault();
+        if (href.indexOf('#/') === 0) navigate(href);
+        else document.getElementById('view').focus();
+        return;
+      }
       var el = e.target.closest('[data-action]');
       if (!el || el.disabled) return;
       var fn = actions[el.dataset.action];
@@ -389,9 +414,9 @@
       addChannel(value).then(function () { if (!ui.busy) { var i = document.querySelector('[data-form="add"] input'); if (i) i.value = ''; } });
     });
     root.addEventListener('hashchange', function () {
-      ui.detail.all = false; ui.detail.vq = ''; ui.vids.limit = 60;
-      Y.views.render();
-      root.scrollTo(0, 0);
+      if (root.location.hash === ui.hash) return;
+      ui.hash = root.location.hash;
+      onRoute();
     });
     root.addEventListener('pagehide', function () {
       if (noteTimer) { clearTimeout(noteTimer); noteTimer = null; persist(); }

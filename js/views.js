@@ -372,7 +372,7 @@
   /* ---------- router ---------- */
 
   function route() {
-    var h = root.location.hash.replace(/^#\/?/, ''), parts = h.split('/');
+    var h = app().ui.hash.replace(/^#\/?/, ''), parts = h.split('/');
     if (parts[0] === 'channel' && parts[1]) return { name: 'channel', id: decodeURIComponent(parts[1]) };
     return { name: ['videos', 'compare', 'settings'].indexOf(parts[0]) >= 0 ? parts[0] : 'home' };
   }
