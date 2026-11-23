@@ -285,6 +285,7 @@
     });
   }
 
+  var LAG_DAYS = 7;
   var DAILY_METRICS = 'views,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost,likes,comments,shares';
 
   function mapDaily(r) {
@@ -303,7 +304,8 @@
     opts = opts || {};
     var days = opts.days || 28;
     var end = opts.end || M.dayKey(new Date());
-    var dailyStart = M.addDays(end, -((opts.historyDays || days * 2) - 1));
+    /* Extra days cover the reporting delay, so the previous period is complete too. */
+    var dailyStart = M.addDays(end, -((opts.historyDays || days * 2) + LAG_DAYS - 1));
     var soft = function (p) { return p.then(null, function () { return []; }); };
     var daily = function (withRevenue) {
       return report(channelId, token, {

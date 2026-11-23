@@ -163,7 +163,7 @@ test('fetchAnalytics maps report rows and tolerates failing optional sections', 
   assert.deepEqual(a.devices, []);
   const day = calls.find((c) => c.url.searchParams.get('dimensions') === 'day');
   assert.equal(day.url.searchParams.get('ids'), 'channel==' + ID);
-  assert.equal(day.url.searchParams.get('startDate'), '2026-01-01');
+  assert.equal(day.url.searchParams.get('startDate'), '2025-12-25');
   assert.equal(day.url.searchParams.get('endDate'), '2026-01-14');
   const traffic = calls.find((c) => c.url.searchParams.get('dimensions') === 'insightTrafficSourceType');
   assert.equal(traffic.url.searchParams.get('startDate'), '2026-01-07');
