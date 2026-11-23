@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -196,7 +197,7 @@ final class NativeBridge {
         JSONObject out = new JSONObject();
         try {
             out.put("token", token);
-            out.put("scope", String.join(" ", result.getGrantedScopes()));
+            out.put("scope", TextUtils.join(" ", result.getGrantedScopes()));
         } catch (JSONException ignored) {
             // values are plain strings
         }
