@@ -169,11 +169,18 @@
         var c = obj.channels[id];
         if (!c || typeof c !== 'object' || c.id !== id) return;
         var existing = state.channels[id];
-        if (!existing || !existing.fetchedAt || (c.fetchedAt && c.fetchedAt > existing.fetchedAt)) {
-          state.channels[id] = Object.assign({}, existing, c);
-          if (obj.videos && obj.videos[id]) state.videos[id] = obj.videos[id];
-          if (obj.analytics && obj.analytics[id]) state.analytics[id] = obj.analytics[id];
+        if (!existing) state.channels[id] = c;
+        else {
+          /* Newer statistics win; the user's own fields stay unless they are empty here. */
+          var newer = c.fetchedAt && (!existing.fetchedAt || c.fetchedAt > existing.fetchedAt);
+          var merged = newer ? Object.assign({}, existing, c) : Object.assign({}, c, existing);
+          USER_FIELDS.forEach(function (f) { merged[f] = existing[f] || c[f]; });
+          state.channels[id] = merged;
         }
+        ['videos', 'analytics'].forEach(function (k) {
+          var inc = obj[k] && obj[k][id], cur = state[k][id];
+          if (inc && typeof inc === 'object' && (!cur || (inc.fetchedAt || '') > (cur.fetchedAt || ''))) state[k][id] = inc;
+        });
         if (state.order.indexOf(id) < 0) state.order.push(id);
         var merged = state.snapshots[id] || [];
         ((obj.snapshots && obj.snapshots[id]) || []).forEach(function (s) {

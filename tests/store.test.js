@@ -75,11 +75,21 @@ test('export leaves out secrets; import merges and validates', () => {
   assert.ok(!/SECRETKEY|CLIENT|tok/.test(JSON.stringify(dump)));
 
   const other = mk().store;
-  other.upsertChannel({ id: 'A', title: 'cũ', subs: 0, fetchedAt: '2025-01-01T00:00:00Z' });
+  other.upsertChannel({ id: 'A', title: 'cũ', subs: 0, fetchedAt: '2025-01-01T00:00:00Z' }, { note: 'ghi chú ở máy này' });
   other.recordSnapshot('A', new Date(2025, 11, 31));
   other.upsertChannel({ id: 'C', title: 'C' });
   assert.equal(other.importData(dump, 'merge'), 1);
   assert.equal(other.state.channels.A.title, 'A');
+  assert.equal(other.state.channels.A.note, 'ghi chú ở máy này');
+  assert.equal(other.state.channels.A.group, 'ref');
+  const older = JSON.parse(JSON.stringify(dump));
+  older.channels.A.fetchedAt = '2020-01-01T00:00:00Z';
+  older.channels.A.title = 'rất cũ';
+  older.channels.A.note = 'ghi chú trong tệp';
+  other.patchChannel('A', { note: '' });
+  other.importData(older, 'merge');
+  assert.equal(other.state.channels.A.title, 'A');
+  assert.equal(other.state.channels.A.note, 'ghi chú trong tệp');
   assert.equal(other.state.snapshots.A.length, 2);
   assert.ok(other.state.channels.C);
   other.importData(dump, 'replace');
