@@ -138,7 +138,12 @@
     return Object.keys(byEmail).reduce(function (p, email) {
       return p.then(function () {
         return Y.auth.requestToken({ hint: email, monetary: settings().monetary, silent: true }).then(function (res) {
-          byEmail[email].forEach(function (id) { store.setToken(id, res.token, res.expiresIn); });
+          /* The account's token only covers its own channel, not e.g. an imported Brand Account channel. */
+          return api.fetchMyChannels(res.token).then(function (mine) {
+            mine.forEach(function (m) {
+              if (byEmail[email].indexOf(m.id) >= 0) store.setToken(m.id, res.token, res.expiresIn);
+            });
+          }, function (err) { if (err.reason === 'authError') Y.auth.invalidate(res.token); });
         }, function () { /* stays expired; the user can reconnect */ });
       });
     }, Promise.resolve());
